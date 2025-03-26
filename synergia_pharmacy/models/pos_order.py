@@ -4,6 +4,7 @@ import re
 from odoo import models, fields, api, _
 from num2words import num2words
 from odoo.exceptions import UserError
+from odoo.tools import float_is_zero, float_round
 
 class PosOrder(models.Model):
     _inherit = 'pos.order'
@@ -54,13 +55,57 @@ class PosOrder(models.Model):
         tracking=1,
         check_company=True)
     account_move_ids = fields.One2many('account.move', 'pos_order_id', string='Invoices')
-    # invoice_count = fields.Integer(compute='_compute_invoice_count')
+    invoice_count = fields.Integer(compute='_compute_invoice_count')
 
-    # @api.depends('account_move_ids', 'account_move_ids.state')
-    # def _compute_picking_count(self):
-    #     for order in self:
-    #         order.invoice_count = len(order.account_move_ids)
-    #         # order.failed_pickings = bool(order.picking_ids.filtered(lambda p: p.state != 'done'))
+    @api.depends('account_move_ids', 'account_move_ids.state')
+    def _compute_invoice_count(self):
+        for order in self:
+            order.invoice_count = len(order.account_move_ids)
+            # order.failed_pickings = bool(order.picking_ids.filtered(lambda p: p.state != 'done'))
+
+    def _is_pos_order_paid(self):
+        if self.is_insurance_order:
+            amount_total = self.patient_share_amount
+            # If we are checking if a refund was paid and if it was a total refund, we take into account the amount paid on
+            # the original order. For a pertial refund, we take into account the value of the items returned.
+            if float_is_zero(self.refunded_order_id.amount_total + amount_total, precision_rounding=self.currency_id.rounding):
+                amount_total = -self.refunded_order_id.amount_paid
+            return float_is_zero(self._get_rounded_amount(amount_total) - self.amount_paid, precision_rounding=self.currency_id.rounding)
+        else:
+            super()._is_pos_order_paid()
+
+    def action_pos_order_paid(self):
+        if self.is_insurance_order:
+            self.ensure_one()
+
+            # TODO: add support for mix of cash and non-cash payments when both cash_rounding and only_round_cash_method are True
+            if not self.config_id.cash_rounding \
+               or self.config_id.only_round_cash_method \
+               and not any(p.payment_method_id.is_cash_count for p in self.payment_ids):
+                total = self.patient_share_amount
+            else:
+                total = float_round(self.patient_share_amount, precision_rounding=self.config_id.rounding_method.rounding, rounding_method=self.config_id.rounding_method.rounding_method)
+
+            isPaid = float_is_zero(total - self.amount_paid, precision_rounding=self.currency_id.rounding)
+
+            if not isPaid and not self.config_id.cash_rounding:
+                raise UserError(_("Order %s is not fully paid.", self.name))
+            elif not isPaid and self.config_id.cash_rounding:
+                currency = self.currency_id
+                if self.config_id.rounding_method.rounding_method == "HALF-UP":
+                    maxDiff = currency.round(self.config_id.rounding_method.rounding / 2)
+                else:
+                    maxDiff = currency.round(self.config_id.rounding_method.rounding)
+
+                diff = currency.round(self.patient_share_amount - self.amount_paid)
+                if not abs(diff) <= maxDiff:
+                    raise UserError(_("Order %s is not fully paid.", self.name))
+
+            self.write({'state': 'paid'})
+
+            return True
+        else:
+            super().action_pos_order_paid()
 
     @api.depends('lines.patient_share_amount', 'insurance_lines.price_subtotal', 'insurance_lines.patient_share_amount')
     def compute_patient_paid_amount(self):
@@ -228,11 +273,8 @@ class PosOrder(models.Model):
             return self.env.ref('synergia_pharmacy.synergia_pharmacy_receipt_report').report_action(self)
 
     def amount_to_text(self, amount, currency):
-
         lang = currency.position == 'after' and 'en' or 'en'
-
         amount_in_words = num2words(amount, to='currency', lang=lang)
-
         return amount_in_words
 
     def _generate_pos_order_invoice(self):
@@ -260,6 +302,7 @@ class PosOrder(models.Model):
 
                 # Update the first invoice values
                 first_invoice_vals.update({
+                    'pos_order_id': order.id,
                     'insurance_amount': order.insurance_amount,  # Custom insurance amount for first invoice
                     'invoice_line_ids': first_invoice_lines,  # Updated lines for the first invoice
                 })
@@ -284,8 +327,13 @@ class PosOrder(models.Model):
 
                 # Now update insurance_invoice_vals with only the necessary changes
                 insurance_invoice_vals.update({
+                    'partner_id':order.partner_company_id,
+                    'pos_order_id': order.id,
                     'insurance_amount': order.insurance_amount,  # Custom insurance amount
                     'invoice_line_ids': invoice_lines,  # Updated lines for the insurance invoice
+                    'copay_amount': order.patient_share_amount,
+                    'insurance_discount': order.insurance_disc_amount,
+                    'total_payable_amount': order.insurance_amount
                 })
 
                 # Create the insurance invoice with custom values (only updated values)
@@ -311,5 +359,11 @@ class PosOrder(models.Model):
 
     def action_view_invoice(self):
         # Call the original method to retain the base functionality
-        res = super().action_view_invoice()
-        return res
+        # res = super().action_view_invoice()
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id('synergia_pharmacy.action_account_move_tree_ready')
+        action['display_name'] = _('Invoices')
+        action['context'] = {}
+        action['domain'] = [('id', 'in', self.account_move_ids.ids)]
+        return action
+        # return res

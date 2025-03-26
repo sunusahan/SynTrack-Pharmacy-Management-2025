@@ -21,6 +21,12 @@
                 <xpath expr="//header" position="inside">
                     <button name="action_print_receipt" string="Print Receipt" type="object" invisible="state != 'paid'"/>
                 </xpath>
+                <xpath expr="//button[@name='action_view_invoice']" position="replace">
+                    <button name="action_view_invoice" string="Invoice" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="state != 'invoiced'">
+                        <field name="invoice_count" widget="statinfo" string="Invoices" />
+                    </button>
+
+                </xpath>
                 <xpath expr="//div[@class='oe_button_box']" position="after">
                     <div class="oe_title">
                     <h1>
