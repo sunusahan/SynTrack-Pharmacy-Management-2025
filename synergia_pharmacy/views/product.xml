@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+<!--        <record id="view_location_tree2_inherit_syn" model="ir.ui.view">-->
+<!--            <field name="name">stock.location.tree.inherit</field>-->
+<!--            <field name="model">stock.location</field>-->
+<!--            <field name="inherit_id" ref="stock.view_location_tree2"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='is_empty']" position="after">-->
+<!--                    <field name="is_return_location"/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record id="product_template_form_view_inherit_syn" model="ir.ui.view">
+            <field name="name">product.template.common.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='standard_price_uom']" position="after">
+                    <label for="moh_price" invisible="(id and product_variant_count != 1
+                                        and not is_product_variant) or type == 'combo'"
+                            id="moh_price_label"
+                        />
+                        <div
+                            name="moh_price_uom"
+                            invisible="(id and product_variant_count != 1
+                                        and not is_product_variant) or type == 'combo'"
+                        >
+                            <field
+                                name="moh_price" readonly="state!='draft'"
+                                class="oe_inline"
+                                widget="monetary"
+                                options="{
+                                    'currency_field': 'cost_currency_id',
+                                    'field_digits': True,
+                                }"
+                            />
+                            <span groups="uom.group_uom">
+                                per
+                                <field name="uom_name" class="oe_inline"/>
+                            </span>
+                        </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_synergia_insurance_company_type,synergia.insurance.company.type,model_synergia_insurance_company_type,,1,1,1,1
+access_synergia_insurance_plan,synergia.insurance.plan,model_synergia_insurance_plan,,1,1,1,1
+access_synergia_partner_insurance_plan,synergia.partner.insurance.plan,model_synergia_partner_insurance_plan,,1,1,1,1
+access_synergia_customer_type,synergia.customer.type,model_synergia_customer_type,,1,1,1,1
+access_synergia_insurance_lines,synergia.insurance.lines,model_synergia_insurance_lines,,1,1,1,1

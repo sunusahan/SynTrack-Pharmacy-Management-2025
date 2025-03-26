@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="synergia_view_pos_pos_tree" model="ir.ui.view">
+            <field name="name">pos.order</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="attributes">
+                    <attribute name="create">1</attribute>
+                </xpath>
+            </field>
+    </record>
+    <record id="synergia_view_pos_pos_form" model="ir.ui.view">
+            <field name="name">pos.order</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="attributes">
+                    <attribute name="create">1</attribute>
+                </xpath>
+                <xpath expr="//header" position="inside">
+                    <button name="action_print_receipt" string="Print Receipt" type="object" invisible="state != 'paid'"/>
+                </xpath>
+                <xpath expr="//div[@class='oe_button_box']" position="after">
+                    <div class="oe_title">
+                    <h1>
+                        <field name="name" readonly="1"/>
+                    </h1>
+                </div>
+                </xpath>
+                <xpath expr="//group[1]" position="replace">
+                    <group string="Order Details">
+                        <group>
+                            <field name="type_of_order" options="{'no_open': True, 'no_edit': True, 'no_create': True, 'no_quick_create': True}" readonly="state != 'draft'"/>
+                            <field name="type_of_transaction" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="date_order" string="Date of Order"/>
+                            <field name="delivery_type" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group string="Patient Details">
+                        <group>
+                            <field name="patient_phone_no" widget="phone" required="1" readonly="state != 'draft'"/>
+                            <field name="partner_id" placeholder="Type to find a customer..."
+                                   context="{'res_partner_search_mode': 'customer'}"
+                                   readonly="state == 'invoiced'" widget="res_partner_many2one" invisible="1"/>
+                            <field name="patient_email" readonly="state != 'draft'"/>
+                            <field name="patient_eid_expiry" readonly="state != 'draft'"/>
+                            <field name="doctor" readonly="state != 'draft'" options="{'no_open': True, 'no_edit': True, 'no_create': True, 'no_quick_create': True}" domain="[('is_doctor', '=', True)]"/>
+                        </group>
+                        <group>
+                            <field name="patient_name" required="1" readonly="state != 'draft'"/>
+                            <field name="patient_eid"  widget="patient_eid_autofill"
+                                   required="is_insurance_order" placeholder="000-0000-00000-00-0" readonly="state != 'draft'" force_save="1"/>
+<!--                            <field name="patient_eid"-->
+<!--                                   required="is_insurance_order" placeholder="000-0000-00000-00-0" readonly="state != 'draft'" force_save="1"/>-->
+<!--                            <field name="patient_eid" widget="mask" data-inputmask-mask="999-9999-9999999-9" force_save="1"/>-->
+                            <field name="clinic" readonly="state != 'draft'" options="{'no_open': True, 'no_edit': True, 'no_create': True, 'no_quick_create': True}" domain="[('is_clinic', '=', True)]"/>
+                        </group>
+                    </group>
+                    <group string="Insurance Details" invisible="not is_insurance_order">
+                        <group>
+                            <field name="insurance_company_type" options="{'no_open': True, 'no_edit': True, 'no_create': True, 'no_quick_create': True}" readonly="state != 'draft'"/>
+                            <field name="insurance_plan" options="{'no_open': True, 'no_edit': True, 'no_create': True, 'no_quick_create': True}" readonly="state != 'draft'"/>
+                            <field name="copay" readonly="state != 'draft'"/>
+                            <field name="approval_date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="partner_company_id" readonly="state != 'draft'" options="{'no_open': True, 'no_edit': True, 'no_create': True, 'no_quick_create': True}" domain="[('is_insurance_company', '=', True)]"/>
+                            <field name="ins_disc" readonly="1" force_save="1"/>
+                            <field name="approval_code" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                </xpath>
+                <xpath expr="//group[@name='other_information']" position="inside">
+                    <field name="employee_id" readonly="1" invisible="not employee_id"/>
+                    <field name="session_id" readonly="state != 'draft'"/>
+                            <field name="order_edit_tracking" invisible="1"/>
+                            <field name="user_id" readonly="1" invisible="employee_id"/>
+                            <field name="is_edited" readonly="1" invisible="not order_edit_tracking"/>
+                            <field name="fiscal_position_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                </xpath>
+<!--                <xpath expr="//notebook/page[@name='products']//list" position="attributes">-->
+<!--                    <attribute name="editable"></attribute>-->
+<!--                </xpath>-->
+                <xpath expr="//notebook/page[@name='products']//list/field[@name='product_id']" position="before">
+                    <field name="product_type" optional="hide" readonly="parent.state != 'draft'"/>
+                    <field name="product_code" optional="hide" readonly="parent.state != 'draft'"/>
+                    <field name="barcode" readonly="parent.state != 'draft'"/>
+                </xpath>
+                <xpath expr="//notebook/page[@name='products']//list/field[@name='product_id']" position="after">
+                    <field name="available_qty" optional="hide" readonly="parent.state != 'draft'"/>
+                </xpath>
+                <xpath expr="//notebook/page[@name='products']//list/field[@name='product_id']" position="attributes">
+                    <attribute name="options">{"no_open": True, "no_edit": True, "no_create": True, "no_quick_create": True}</attribute>
+                </xpath>
+                <xpath expr="//notebook/page[@name='products']//list/field[@name='price_unit']" position="after">
+                    <field name="sub_total" optional="hide" column_invisible="not parent.is_insurance_order" readonly="parent.state != 'draft'"/>
+                    <field name="ins_disc_percentage" column_invisible="not parent.is_insurance_order" readonly="parent.state != 'draft'"/>
+                    <field name="ins_disc_amount" column_invisible="not parent.is_insurance_order" readonly="parent.state != 'draft'"/>
+                    <field name="subtotal_after_ins_disc_amt" optional="hide" column_invisible="not parent.is_insurance_order" readonly="parent.state != 'draft'"/>
+                    <field name="copay" column_invisible="not parent.is_insurance_order" readonly="parent.state != 'draft'"/>
+                    <field name="patient_share_amount" column_invisible="not parent.is_insurance_order" readonly="parent.state != 'draft'"/>
+                    <field name="insurance_amount" column_invisible="not parent.is_insurance_order" readonly="parent.state != 'draft'"/>
+                </xpath>
+                <xpath expr="//notebook/page[@name='products']//group[@name='order_total']/field[@name='amount_total']" position="after">
+                    <field name="patient_paid_amount" readonly="1" force_save="1" class="h3" widget="monetary" options='{"widget": "float", "decimal_precision": "Product Price"}'/>
+                </xpath>
+                <xpath expr="//notebook/page[@name='products']" position="before">
+                    <page name="Insurance Lines" invisible="not is_insurance_order">
+                        <field name="insurance_lines" string="Insurance Lines" force_save="1">
+                            <list string="Insurance Lines" >
+                                <field name="product_type" optional="hide" readonly="parent.state != 'draft'"/>
+                                <field name="product_code" optional="hide" readonly="parent.state != 'draft'"/>
+                                <field name="product_id" readonly="parent.state != 'draft'" options="{'no_open': True, 'no_edit': True, 'no_create': True, 'no_quick_create': True}"/>
+                                <field name="qty" readonly="parent.state != 'draft'"/>
+                                <field name="product_uom_id" readonly="parent.state != 'draft'"/>
+                                <field name="price_unit" readonly="parent.state != 'draft'"/>
+                                <field name="sub_total" optional="hide" readonly="parent.state != 'draft'"/>
+                                 <field name="tax_ids_after_fiscal_position" widget="many2many_tags" string="Taxes"/>
+                                <field name="tax_ids" widget="many2many_tags" column_invisible="True"/>
+                                <field name="ins_disc_percentage" readonly="parent.state != 'draft'"/>
+                                <field name="ins_disc_amount" readonly="parent.state != 'draft'"/>
+                                <field name="subtotal_after_ins_disc_amt" optional="hide" readonly="parent.state != 'draft'"/>
+                                <field name="copay" readonly="parent.state != 'draft'"/>
+                                <field name="patient_share_amount" readonly="parent.state != 'draft'"/>
+                                <field name="insurance_amount" readonly="parent.state != 'draft'"/>
+                                <field name="price_subtotal" readonly="parent.state != 'draft'"/>
+                                <field name="total_insu_amt" readonly="parent.state != 'draft'"/>
+                            </list>
+                            <form string="Insurance Lines" >
+                                <group>
+                                    <group>
+<!--                                        <field name="product_type" optional="hide" readonly="parent.state != 'draft'"/>-->
+                                        <field name="product_id" readonly="parent.state != 'draft'" options="{'no_open': True, 'no_edit': True, 'no_create': True, 'no_quick_create': True}"/>
+                                        <field name="product_uom_id" readonly="parent.state != 'draft'"/>
+<!--                                        <field name="sub_total" optional="hide" readonly="parent.state != 'draft'"/>-->
+                                        <field name="ins_disc_percentage" readonly="1"/>
+                                        <field name="subtotal_after_ins_disc_amt" optional="hide" readonly="1"/>
+                                        <field name="patient_share_amount" readonly="1"/>
+                                        <field name="price_subtotal" readonly="1"/>
+                                    </group>
+                                    <group>
+<!--                                        <field name="product_code" optional="hide" readonly="parent.state != 'draft'"/>-->
+                                        <field name="qty" readonly="parent.state != 'draft'"/>
+                                        <field name="price_unit" readonly="parent.state != 'draft'"/>
+<!--                                        <field name="tax_ids" readonly="parent.state != 'draft'"/>-->
+                                        <field name="ins_disc_amount" readonly="1"/>
+                                        <field name="copay" readonly="parent.state != 'draft'"/>
+                                        <field name="insurance_amount" readonly="1"/>
+                                        <field name="total_insu_amt" readonly="1"/>
+                                    </group>
+                                </group>
+                            </form>
+
+                        </field>
+                        <group class="oe_subtotal_footer" colspan="2" name="order_total">
+                            <field name="total_before_discount" force_save="1" class="h3" widget="monetary" string="Total Before Discount" options='{"widget": "float", "decimal_precision": "Product Price"}'/>
+                            <field name="total_untaxed_insurance_amount" force_save="1" class="h3" widget="monetary" string="Total Untaxed Amt" options='{"widget": "float", "decimal_precision": "Product Price"}'/>
+                            <field name="patient_share_amount" force_save="1" class="h5" widget="monetary" string="Patient Share Amt" options='{"widget": "float", "decimal_precision": "Product Price"}'/>
+                            <field name="patient_share_amount" force_save="1" class="h5" widget="monetary" string="Patient Copay Amount" options='{"widget": "float", "decimal_precision": "Product Price"}'/>
+                            <field name="insurance_disc_amount" force_save="1" class="h5" widget="monetary" string="Insurance Disc Amount" options='{"widget": "float", "decimal_precision": "Product Price"}'/>
+                            <field name="insurance_amount" force_save="1" class="h5" widget="monetary" string="Insurance Amount" options='{"widget": "float", "decimal_precision": "Product Price"}'/>
+                        </group>
+                    </page>
+                </xpath>
+<!--<xpath expr="//group[1]" position="before">-->
+<!--    <group>  &lt;!&ndash; New Parent Group &ndash;&gt;-->
+<!--        <group>-->
+<!--            <xpath expr="//group[1]" position="replace"/>  &lt;!&ndash; Moves existing group inside &ndash;&gt;-->
+<!--        </group>-->
+<!--        <group>-->
+<!--            &lt;!&ndash; This is the new empty group &ndash;&gt;-->
+<!--        </group>-->
+<!--    </group>-->
+<!--</xpath>-->
+
+
+
+
+<!--                <xpath expr="//group[2]" position="inside">-->
+<!--                    <field name="date_order"/>-->
+<!--                </xpath>-->
+            </field>
+    </record>
+</odoo>
