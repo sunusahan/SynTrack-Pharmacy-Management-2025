@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+        <record id="synergia_view_account_move_insurance_form" model="ir.ui.view">
+            <field name="name">account.move</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook/page[@name='invoice_tab']/field[@name='invoice_line_ids']/list/field[@name='discount']" position="after">
+                    <field name="insurance_discount_percentage" />
+                    <field name="subtotal_after_ins_disc_amt"/>
+                    <field name="copay_percentage"/>
+                    <field name="patient_share_amount"/>
+                </xpath>
+            </field>
+        </record>
+</odoo>

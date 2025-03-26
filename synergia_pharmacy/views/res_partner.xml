@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="view_partner_form_inherit_pharmacy" model="ir.ui.view">
+            <field name="name">res.partner</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//h1" position="before">
+                        <group>
+        <div class="o_row">
+<!--            <div class="o_col-xs-3">-->
+                <group>
+                <field name="is_insurance_company"/>
+                </group>
+<!--            </div>-->
+<!--            <div class="o_col-xs-3">-->
+                <group>
+                <field name="is_patient"/>
+                </group>
+<!--            </div>-->
+<!--            <div class="o_col-xs-3">-->
+                <group>
+                <field name="is_clinic"/>
+                </group>
+<!--            </div>-->
+<!--            <div class="o_col-xs-3">-->
+                <group>
+                <field name="is_doctor"/>
+                </group>
+<!--            </div>-->
+        </div>
+    </group>
+                </xpath>
+                <xpath expr="//group/group[1]" position="inside">
+                     <field name="eid" widget="patient_eid_autofill" placeholder="000-0000-00000-00-0" invisible="not is_patient"/>
+                </xpath>
+                <xpath expr="//group/group[2]" position="inside">
+                    <field name="eid_expiry_date" invisible="not is_patient"/>
+                </xpath>
+                <xpath expr="//notebook" position="inside">
+                <page string="Insurance Plan Details" name="insurance_plan_details" invisible="not is_insurance_company" autofocus="autofocus">
+                    <field name="insurance_plan_ids">
+                        <list string="Insurance Plans" create="1" delete="1" editable="bottom">
+                            <field name="insurance_plan" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="partner_id" column_invisible="1" options="{'no_open': True, 'no_create': True}" domain="[('is_insurance_company', '=', True)]"/>
+<!--                            <field name="name"/>-->
+
+                            <field name="insurance_company_type" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="ins_disc"/>
+                            <field name="copay"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+                 <xpath expr="//field[@name='parent_id']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//field[@name='type']" position="replace">
+<!--                    <attribute name="invisible">not is_company</attribute>-->
+                </xpath>
+                <xpath expr="//span[@invisible='not is_company']" position="attributes">
+                    <attribute name="invisible"></attribute>
+                </xpath>
+                <xpath expr="//field[@name='website']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//field[@name='vat']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//div[@name='vat_vies_container']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//label[@for='vat']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//field[@name='trade_reg']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//field[@name='category_id']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//field[@name='trade_reg_expiry']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//field[@name='area_code_id']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//field[@name='title']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+                <xpath expr="//field[@name='function']" position="attributes">
+                    <attribute name="invisible">not is_company</attribute>
+                </xpath>
+            </field>
+        </record>
+
+
+        <!-- Parent Menu for Customer Type -->
+<!--        <menuitem id="pos_config_menu_customer_type"-->
+<!--                  name="Customer Type"-->
+<!--                  parent="contacts.res_partner_menu_config"-->
+<!--                  sequence="30"/>-->
+
+        <!-- Form View for Customer Type -->
+        <record id="synergia_view_customer_type_form" model="ir.ui.view">
+            <field name="name">synergia.customer.type.form</field>
+            <field name="model">synergia.customer.type</field>
+            <field name="arch" type="xml">
+                <form string="Customer Type">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree View for Customer Type -->
+        <record id="synergia_view_customer_type_tree" model="ir.ui.view">
+            <field name="name">synergia.customer.type.tree</field>
+            <field name="model">synergia.customer.type</field>
+            <field name="arch" type="xml">
+            <list string="Customer Type" create="1" delete="1" editable="bottom">
+                    <field name="name"/>
+                    <field name="code"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Action for Customer Type -->
+        <record id="action_synergia_customer_type" model="ir.actions.act_window">
+            <field name="name">Customer Types</field>
+            <field name="res_model">synergia.customer.type</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="synergia_view_customer_type_tree"/>
+        </record>
+
+
+        <menuitem id="menu_pos_customer_type"
+                  action="action_synergia_customer_type"
+                  parent="synergia_pharmacy.main_menu_synergia_insurance_plan"
+                  sequence="1"
+                  name="Customer Type"/>
+
+
+
+    </data>
+</odoo>

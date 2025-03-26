@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+
+        <template id="synergia_barcode_report.report_stock_barcode_template">
+            <t t-call="web.basic_layout">
+                <!--                <t t-foreach="doc.get_lot_level_barcode()" t-as="barcode_level">-->
+                <t t-if="doc.get_lot_level_barcode()">
+                    <div class="col-12">
+                        <table class="table table-condensed table-borderless">
+                            <tr>
+                                <td class="col-md-12 text-center" style="vertical-align: middle; border:none !important;">
+                                    <div class="col-12">
+                                        <strong style="font-size:40px;" t-esc="doc.get_lot_level_barcode()[1]"/>
+                                    </div>
+
+                                    <div class="col-12 d-flex justify-content-between align-items-center">
+                                        <div class="col-4 text-center">
+                                            <strong style="font-size:35px;"
+                                                    t-if="doc.get_lot_level_barcode() and len(doc.get_lot_level_barcode()) > 4"
+                                                    t-esc="doc.get_lot_level_barcode()[3]"/>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <img style="display: block; margin: auto; max-width: 100%; height: auto;"
+                                                 t-att-src="'/report/barcode/QR/%s?width=%s&amp;height=%s' % (doc.get_lot_level_barcode()[3], 250, 250)"/>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <strong style="font-size:35px;"
+                                                t-if="doc.get_lot_level_barcode() and len(doc.get_lot_level_barcode()) > 6"
+                                                t-esc="doc.get_lot_level_barcode()[6]"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <strong style="font-size:40px;" t-esc="doc.get_lot_level_barcode()[0]"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+
+    </data>
+</odoo>

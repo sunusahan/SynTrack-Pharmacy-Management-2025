@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="synergia_pharmacy_receipt_report" model="ir.actions.report">
+            <field name="name">Receipt Report</field>
+            <field name="model">pos.order</field>
+<!--            <field name="report_type">qweb-html</field>-->
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">synergia_pharmacy.report_synergia_pharmacy_receipt</field>
+            <field name="report_file">synergia_pharmacy.report_synergia_pharmacy_receipt</field>
+            <field name="paperformat_id" ref="synergia_pharmacy.custom_pharmacy_sales_report"/>
+            <field name="binding_model_id" ref="model_pos_order"/>
+            <field name="binding_type">report</field>
+        </record>
+
+<!--    <template id="report_synergia_pharmacy_receipt">-->
+<!--        <t t-call="web.html_container">-->
+<!--                <t t-foreach="docs" t-as="doc">-->
+<!--                    <t t-call="synergia_pharmacy.sales_summary_report_template"/>-->
+<!--                </t>-->
+<!--            </t>-->
+<!--    </template>-->
+<template id="report_synergia_pharmacy_receipt">
+        <t t-call="web.basic_layout">
+            <div class="page" style="font-family:'Oswald';">
+                <t t-foreach="docs" t-as="doc">
+                    <style type="text/css">
+                        table.line_table td,table.line_table th{
+                        padding-top:5px !important;
+                        padding-bottom:5px !important;
+                        }
+                    </style>
+                    <div class="oe_structure"/>
+                    <center>
+                        <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 60px;" alt="Logo"/>
+                        <div width="100%" style="margin-right:-5px;margin-left:-5px">
+                            <strong>
+                                <span style="font-size:18px !important;">
+                                    <t t-esc="doc.company_id.name"/>
+                                </span>
+                            </strong>
+                            <div class="text-center" t-if="doc.company_id.street or doc.company_id.street2">
+                                <t t-if="doc.company_id.street">
+                                    <t t-esc="doc.company_id.street"/>,
+                                </t>
+                                <t t-esc="doc.company_id.street2"/>
+                            </div>
+                            <div class="text-center" t-if="doc.company_id.city or doc.company_id.zip">
+                                <t t-if="doc.company_id.city">
+                                    <t t-esc="doc.company_id.city"/>,
+                                </t>
+                                <t t-if="doc.company_id.zip">PO:
+                                    <t t-esc="doc.company_id.zip"/>
+                                </t>
+                            </div>
+                            <div class="text-center" t-if="doc.company_id.state_id.name or doc.company_id.country_id.name">
+                                <t t-if="doc.company_id.state_id.name">
+                                    <t t-esc="doc.company_id.state_id.name"/>
+                                    -
+                                </t>
+                                <t t-esc="doc.company_id.country_id.name"/>
+                            </div>
+                            <t t-if="doc.company_id.email">
+                                <div class="text-center">
+                                    Email:
+                                    <t t-esc="doc.company_id.email"/>
+                                </div>
+                            </t>
+                            <t t-if="doc.company_id.website">
+                                <div class="text-center">
+                                    Website:
+                                    <t t-esc="doc.company_id.website"/>
+                                </div>
+                            </t>
+                            <div class="text-center" t-if="doc.company_id.phone">
+                                Tel:
+                                <t t-esc="doc.company_id.phone"/>
+                            </div>
+                            <div class="text-center" t-if="doc.company_id.vat">
+                                <strong>
+                                    TRN:
+                                    <t t-esc="doc.company_id.vat"/>
+                                </strong>
+                            </div>
+                            <!--                            <div class="text-center" t-if="doc.patient_type=='insurance' and not doc.cr_invoice_ids">-->
+                            <!--                                Insurance Receipt-->
+                            <!--                            </div>-->
+                            <!--                            <div class="text-center" t-if="doc.patient_type=='cash' and not doc.cr_invoice_ids">-->
+                            <!--                                Cash Receipt-->
+                            <!--                            </div>-->
+<!--                            <t t-if="doc.company_id.disable_tax_for_sales">-->
+                                <div t-if="doc.is_insurance_order">
+                                    <h4 style="margin:5px">INSURANCE RECEIPT</h4>
+                                </div>
+<!--                            </t>-->
+<!--                            <t t-if="not doc.company_id.disable_tax_for_sales">-->
+<!--                                <div t-if="not doc.is_insurance_order">-->
+
+<!--                                    <h4 style="margin:5px">TAX INVOICE</h4>-->
+<!--                                </div>-->
+<!--                            </t>-->
+<!--                            <div t-if="doc.is_insurance_order">-->
+<!--                                &lt;!&ndash;                                <h3>&ndash;&gt;-->
+<!--                                &lt;!&ndash;                                    <t t-esc='doc.company_id.name'/>&ndash;&gt;-->
+<!--                                &lt;!&ndash;                                </h3>&ndash;&gt;-->
+<!--                                <h4 style="margin:5px">VOUCHER</h4>-->
+<!--                            </div>-->
+
+                        </div>
+                    </center>
+                    <div width="100%" style="margin-right:-5px;margin-left:-5px" t-if="not doc.is_insurance_order">
+                        <table width="100%">
+                            <tr>
+                                <th colspan="4">Bill No.
+                                    <span t-esc="doc.name"/>
+                                </th>
+                                <t tif="doc.create_date">
+                                    <th style="text-align:right;">
+                                    Date:
+<!--                                    <span t-esc="doc.get_report_date()"/>-->
+                                    <span t-esc="context_timestamp(doc.create_date).strftime('%Y-%m-%d %H:%M:%S')"/>
+                                </th>
+                                </t>
+                            </tr>
+                        </table>
+                    </div>
+<!--                    <div width="100%" style="margin-right:-5px;margin-left:-5px" t-if="doc.is_insurance_order">-->
+                    <div width="100%" style="margin-right:-5px;margin-left:-5px" t-if="doc.is_insurance_order">
+
+                        <table width="100%" style="border:0px !important">
+                            <tr>
+                                <th colspan="4">Receipt No.
+                                    <span t-esc="doc.name"/>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td colspan="4">Pharmacist:
+                                    <span t-esc="doc.user_id.name"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+
+                    <div width="100%" style="margin-right:-5px;margin-left:-5px">
+                        <table width="100%"
+                               style="border-top:1px solid !important;border-bottom:1px solid !important;border-left:0px solid !important;border-right:0px solid !important;">
+                            <tr>
+                                <td style="border-left:0px solid !important; border-right:0px solid !important;">
+                                    <b>Pharmacist :</b>
+                                </td>
+                                <td style="border-left:0px solid !important; border-right:0px solid !important;">
+                                    <t t-esc="doc.user_id.name"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.is_insurance_order">
+                                <td style="border-left:0px solid !important; border-right:0px solid !important;">
+                                    <b>Issued Date :</b>
+                                </td>
+                                <td style="border-left:0px solid !important; border-right:0px solid !important;">
+                                    <t t-esc="time.strftime('%d/%m/%y', time.strptime(str(doc.date_order),'%Y-%m-%d %H:%M:%S'))"/>
+                                </td>
+                            </tr>
+<!--                            <tr t-if="doc.is_insurance_order">-->
+<!--                                <td>-->
+<!--                                    <b>Voucher Value :</b>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <t t-esc="'%.2f'%doc.voucher_amount"/>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+                            <tr t-if="doc.is_insurance_order">
+                                <td>
+                                    <b>Valid Upto :</b>
+                                </td>
+                                <td>
+<!--                                    <t t-esc="doc._get_expiry_date()"/>-->
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Patient :</b>
+                                </td>
+                                <td>
+                                    <t t-esc="doc.patient_name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Phone :</b>
+                                </td>
+                                <td>
+                                    <t t-esc="doc.patient_phone_no"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.is_insurance_order">
+                                <td t-if="doc.type_of_order.name != 'voucher'">
+                                    <b>Type of Order:</b>
+                                </td>
+                                <td t-if="doc.type_of_order.name != 'voucher'">
+                                    <t t-if="doc.type_of_order.name == 'Cash'">Cash</t>
+                                    <t t-if="doc.type_of_order.name == 'Insurance'">Insurance</t>
+                                    <t t-if="doc.type_of_order.name == 'credit'">Credit</t>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.partner_company_id and doc.is_insurance_order">
+                                <td>
+                                    <b>Insurance Company :</b>
+                                </td>
+                                <td>
+                                    <span t-esc="doc.partner_company_id.name"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.type_of_order.name != 'voucher' and doc.insurance_plan.name and doc.is_insurance_order">
+                                <td class="pos-left-align">
+                                    <span>
+                                        <b>Insurance Plan :</b>
+                                    </span>
+                                    <!--<span style="float:right">POS:<span t-esc="widget.pos.config.name || ''"/></span></td>-->
+                                </td>
+                                <td>
+                                    <span t-esc="doc.insurance_plan.name"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.type_of_order.name != 'voucher' and doc.patient_eid and doc.is_insurance_order">
+                                <td class="pos-left-align">
+                                    <span>
+                                        <b>Emirates ID :</b>
+
+                                    </span>
+                                </td>
+                                <td>
+                                    <span t-esc="doc.patient_eid"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.type_of_order.name != 'voucher' and doc.clinic and doc.is_insurance_order">
+                                <td class="pos-left-align">
+                                    <span>
+                                        <b>Clinic :</b>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span t-esc="doc.clinic.name"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.is_insurance_order and doc.type_of_order.name != 'voucher'">
+                                <td style="padding-bottom:5px;">
+                                    <b>Doctor :</b>
+                                </td>
+                                <td>
+                                    <t t-esc="doc.doctor.name"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <t t-set="total_amt" t-value="0"/>
+                    <t t-set="total_ins_dis" t-value="0"/>
+                    <t t-set="total_ins" t-value="0"/>
+                    <t t-set="total_bf_vat" t-value="0"/>
+                    <t t-set="total_vat" t-value="0"/>
+                    <t t-set="total_aed" t-value="0"/>
+                    <t t-set="qty" t-value="0"/>
+                    <t t-set="pat_share_amt" t-value="0"/>
+                    <t t-set="pat_copay" t-value="0"/>
+                    <div width="100%" t-if="doc.is_insurance_order" style="margin-top:10px;font-size:11px !important;margin-right:-5px;margin-left:-5px">
+                        <table class="line_table" width="100%">
+<!--                            <thead>-->
+
+                                <tr>
+                                    <th width="30%">
+                                        <strong>Particulars</strong>
+                                    </th>
+                                    <th width="10%">
+                                        <strong>Qty</strong>
+                                    </th>
+                                    <th width="10%">
+                                        <strong>UOM</strong>
+                                    </th>
+                                    <th width="10%">
+                                        <strong>Price Unit</strong>
+                                    </th>
+<!--                                    <t t-if="not doc.company_id.disable_tax_for_sales">-->
+<!--                                        <th style="text-align: right;" width="10%">-->
+<!--                                            <strong>VAT</strong>-->
+<!--                                        </th>-->
+<!--                                    </t>-->
+                                    <th style="text-align: right;" width="10%">
+                                        <strong>SubTotal</strong>
+                                    </th>
+                                    <th style="text-align: right;" width="10%">
+                                        <strong>Disc %</strong>
+                                    </th>
+                                    <th style="text-align: right;" width="10%">
+                                        <strong>Amount</strong>
+                                    </th>
+                                </tr>
+
+<!--                            </thead>-->
+                            <tbody>
+                                <t t-foreach="doc.insurance_lines" t-as="l">
+                                    <tr style="line-height: 14px;">
+                                        <t t-if="']' in l.product_id.name">
+                                          <td>
+                                              <span t-esc="l.product_id.name.split(']')[1]"/>
+                                          </td>
+                                        </t>
+                                        <t t-else="">
+                                           <td>
+                                            <span t-esc="l.product_id.name"/>
+                                          </td>
+                                        </t>
+                                        <td>
+<!--                                            <span t-esc="'%.2f'%l.pack_qty"/>-->
+                                            <span t-esc="'%.2f'%l.qty"/>
+                                        </td>
+                                        <td class="text-left">
+<!--                                            <span t-field="l.product_packaging.name"/>-->
+                                            <span t-esc="l.product_uom_id.name"/>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span t-esc="l.price_unit"/>
+                                        </td>
+<!--                                        <t t-if="not doc.company_id.disable_tax_for_sales">-->
+<!--                                            <td style="text-align: right;">-->
+<!--                                                <span t-esc="'%.2f'%l.price_tax"/>-->
+<!--                                            </td>-->
+<!--                                        </t>-->
+                                        <td style="text-align: right;">
+                                            <span t-esc="'%.2f'%l.sub_total"/>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span t-esc="'%.2f'%l.discount"/>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span t-esc="'%.2f'%l.price_subtotal"/>
+                                        </td>
+
+                                        <t t-set="qty" t-value="qty+l.qty"/>
+                                        <t t-set="total_amt" t-value="total_amt+l.price_subtotal"/>
+                                        <t t-set="total_ins_dis" t-value="total_ins_dis+l.ins_disc_amount"/>
+                                        <t t-set="total_ins" t-value="total_ins+l.insurance_amount"/>
+                                        <t t-set="total_bf_vat" t-value="0"/>
+                                        <t t-set="total_vat" t-value="total_vat+l.tax_ids.id"/>
+                                        <t t-set="total_aed" t-value="total_aed+l.price_subtotal"/>
+                                        <t t-set="pat_share_amt" t-value="pat_share_amt+l.patient_share_amount"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <table width="100%" >
+                            <tbody>
+                                <tr style="border-top:1px solid !important;">
+                                    <td colspan="4">Total Before Insurance Discount</td>
+                                    <td style="text-align: right;">
+                                        <span t-esc="'%.2f'%(doc.total_before_discount)"/>
+                                    </td>
+                                </tr>
+                                <tr style="border-top:1px solid !important;">
+                                    <td colspan="4">Total Untaxed Amount
+<!--                                        <span t-field="doc.currency_id"/>-->
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <span t-esc="'%.2f'%doc.total_untaxed_insurance_amount"/>
+                                    </td>
+                                </tr>
+                                <tr style="border-top:1px solid !important;">
+                                    <td colspan="4">Patient Share Amount</td>
+                                    <td style="text-align: right;">
+                                        <t t-if="pat_share_amt"><span t-esc="'%.2f'%pat_share_amt"/></t>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.type_of_order.name=='Insurance'" style="border-top:1px solid !important;">
+                                    <td colspan="4">Patient Copay Amount</td>
+                                    <td style="text-align: right;">
+                                        <t t-if="pat_share_amt"><span t-esc="'%.2f'%pat_share_amt"/></t>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.type_of_order.name=='Insurance'" style="border-top:1px solid !important;">
+                                    <td colspan="4">Insurance Discount Amount</td>
+                                    <td style="text-align: right;">
+                                        <t t-if="total_ins_dis"><span t-esc="'%.2f'%total_ins_dis"/></t>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.type_of_order.name=='Insurance'" style="border-top:1px solid !important;">
+                                    <td colspan="4">Insurance Amount</td>
+                                    <td style="text-align: right;">
+                                        <t t-if="total_ins"><span t-esc="'%.2f'%total_ins"/></t>
+                                    </td>
+                                </tr>
+<!--                                <tr t-if="doc.type_of_order.name=='Insurance'" style="border-top:1px solid !important;">-->
+<!--                                    <td colspan="4">Patient Share</td>-->
+<!--                                    <td style="text-align: right;">-->
+<!--                                        <span t-esc="'%.2f'%pat_share_amt"/>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                <t t-if="not doc.company_id.disable_tax_for_sales">-->
+<!--                                    <tr>-->
+<!--                                        <td colspan="4">VAT</td>-->
+<!--                                        <td style="text-align: right;">-->
+<!--                                            <span t-esc="'%.2f'%total_vat"/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                </t>-->
+
+                                <tr style="border-top:1px solid !important;" t-if="doc.type_of_order.name != 'voucher'">
+                                    <td colspan="4">Amount to Pay
+                                        <span t-field="doc.currency_id"/>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <span t-esc="'%.2f'%doc.patient_paid_amount"/>
+                                    </td>
+                                </tr>
+
+<!--                                <tr style="border-top:1px solid !important;" t-if="doc.patient_type != 'voucher'">-->
+<!--                                    <td colspan="4">Sale Voucher Reedem Amount-->
+<!--                                        <span t-field="doc.currency_id"/>-->
+<!--                                    </td>-->
+<!--                                    <td style="text-align: right;">-->
+<!--                                        <span t-esc="'%.2f'% sum(i.reedem_sale_voucher_amount for i in doc.reedeem_voucher_ids)"/>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+
+<!--                                <tr style="border-top:1px solid !important;" t-if="doc.type_of_order.name == 'voucher'">-->
+<!--                                    <td colspan="4">Voucher Amount-->
+<!--                                        <span t-field="doc.currency_id"/>-->
+<!--                                    </td>-->
+<!--                                    <td style="text-align: right;">-->
+<!--                                        <span t-esc="'%.2f'%doc.cust_credit_amount"/>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+
+<!--                                <tr style="border-top:1px solid !important;" t-if="doc.type_of_order.name == 'voucher'">-->
+<!--                                    <td colspan="4">Redeemed Amount-->
+<!--                                        <span t-field="doc.currency_id"/>-->
+<!--                                    </td>-->
+<!--                                    <td style="text-align: right;">-->
+<!--                                        <span t-esc="'%.2f'%doc.redeem_amount"/>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                <tr t-if="doc.type_of_order.name == 'voucher'">-->
+<!--                                    <td colspan="4">Remaining Voucher Amount-->
+<!--                                        <span t-field="doc.currency_id"/>-->
+<!--                                    </td>-->
+<!--                                    <td style="text-align: right;">-->
+<!--                                        <span t-esc="'%.2f'%doc.vou_bal_amount"/>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                <tr style="border-top:1px solid !important;" t-if="doc.type_of_order.name == 'voucher'">-->
+<!--                                    <td colspan="4">Patient Amount to Pay-->
+<!--                                        <span t-field="doc.currency_id"/>-->
+<!--                                    </td>-->
+<!--                                    <td style="text-align: right;">-->
+<!--                                        <span t-esc="'%.2f'%(doc.patient_paid_amount-doc.redeem_amount)"/>-->
+<!--                                    </td>-->
+
+<!--                                </tr>-->
+                                <tr style="border-top:1px solid !important;" t-if="doc.type_of_order.name == 'insurance'">
+                                    <td colspan="4">Discount on Copay</td>
+                                    <td style="text-align: right;">
+                                        <span t-esc="doc.insurance_disc_amount"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="not doc.payment_ids">
+                                    <td colspan="4">Paid Amount
+                                        <span t-field="doc.currency_id"/>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <span t-esc="round(doc.amount_total-doc.insurance_amount,2)"/>
+                                    </td>
+                                </tr>
+                                <tr style="border-top:1px solid !important;" t-if="doc.payment_ids">
+                                    <td colspan="5">
+                                        <strong>Paid Amount</strong>
+                                    </td>
+                                </tr>
+
+                                <tr t-if="doc.payment_ids" t-foreach="doc.payment_ids" t-as="payment">
+
+                                    <td colspan="4">
+                                        <span t-esc="payment.payment_method_id.name"/>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <span t-esc="'%.2f'%payment.amount"/>
+                                    </td>
+                                </tr>
+<!--                                <tr style="border-top:1px solid !important;">-->
+<!--                                    <td colspan="4">Change Amount-->
+<!--                                        <span t-field="doc.currency_id"/>-->
+<!--                                    </td>-->
+<!--                                    <td style="text-align: right;">-->
+<!--                                        <span t-esc="'%.2f'%doc.change_amount"/>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+                                <tr>
+                                    <td class="text-left" colspan="5">
+
+                                        <b>Total in words:</b>
+                                        <t t-set="currency" t-value="doc.currency_id"/>
+                                        <span t-esc="doc.amount_to_text(doc.patient_paid_amount,currency)"/>
+                                    </td>
+                                </tr>
+<!--                                <t t-set="voucher_doc" t-value="doc._get_next_voucher()"/>-->
+                                <tr>
+                                    <td colspan="5">Pharmacist:
+                                        <span t-esc="doc.user_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5">
+                                        <center>
+<!--                                            <img t-att-src="'/report/barcode/?type=%s&amp;width=%s&amp;height=%s&amp;value=No : %s;Date : %s; Patient : %s;Total Amount : %s' %('QR', 100, 100, doc.name, doc.date_order, doc.patient_name, doc.patient_paid_amount)"/>-->
+                                            <br/>
+                                            <span t-esc="doc.name"/>
+                                            <br/>
+<!--                                            <t t-if="doc.insurance_disc_amount != 0.0">-->
+<!--                                                <span>Congratulation you have saved <span t-field="doc.currency_id"/><t t-esc="'%.2f'%doc.insurance_disc_amount"/> in this transaction</span>-->
+<!--                                            </t>-->
+<!--                                            <t t-if="doc.type_of_order.name != 'voucher' and voucher_doc">-->
+<!--                                                <br/>-->
+<!--                                            <br/>Powered with InPharma-->
+<!--                                            <br/>by www.synergiasoft.com-->
+<!--                                            </t>-->
+                                        </center>
+                                    </td>
+                                </tr>
+<!--                                <tr t-if="doc.type_of_order.name == 'voucher'">-->
+<!--                                    <td colspan="5">-->
+<!--                                        <center>-->
+<!--                                            <br/>-->
+<!--                                            <br/>-->
+<!--                                            <img t-att-src="'/report/barcode/?type=%s&amp;width=%s&amp;height=%s&amp;value=No : %s;Date : %s; Patient : %s;Total Amount : %s' %('QR', 100, 100, doc.name, doc.date_order, doc.sale_patient_name, doc.patient_paid_amount)"/>-->
+<!--                                            <br/>-->
+<!--&lt;!&ndash;                                            <strong>Voucher Value&ndash;&gt;-->
+<!--&lt;!&ndash;                                                <t t-esc="'%.2f'%voucher_doc.voucher_amount"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                                            </strong>&ndash;&gt;-->
+<!--                                            <br/>-->
+<!--                                            <br/>-->
+<!--                                            <strong>Valid Upto-->
+<!--                                                <t t-esc="time.strftime('%d/%m/%Y', time.strptime(str(voucher_doc.voucher_valid_date),'%Y-%m-%d'))"/>-->
+<!--                                            </strong>-->
+<!--                                            <br/>-->
+<!--                                            <br/>-->
+<!--                                            <strong>Total Remaining Voucher Amount-->
+<!--&lt;!&ndash;                                                <t t-esc="'%.2f'%(doc.vou_bal_amount+voucher_doc.voucher_amount)"/>&ndash;&gt;-->
+<!--                                                <t t-esc="'%.2f'%(doc.vou_bal_amount)"/>-->
+<!--                                            </strong>-->
+<!--                                            <br/>Powered with InPharma-->
+<!--                                            <br/>by www.synergiasoft.com-->
+<!--                                        </center>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div width="100%" t-if="doc.is_insurance_order" style="margin-right:-5px;margin-left:-5px">
+                        <table class="line_table" width="100%">
+                            <tbody>
+                                <tr>
+                                    <td colspan="10">
+                                        <br/>
+<!--                                        <t t-set="voucher" t-value="doc._get_voucher_details()"/>-->
+                                        <t t-set="voucher" t-value="0"/>
+                                        <center>
+<!--                                            <img t-att-src="'/report/barcode/?type=%s&amp;width=%s&amp;height=%s&amp;value=%s' %('QR', 200, 200, voucher.name)"/>-->
+<!--                                            <img t-att-src="'/report/barcode/?type=%s&amp;width=%s&amp;height=%s&amp;value=%s' %('QR', 200, 200, voucher)"/>-->
+                                        </center>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="10">
+                                        <center>
+<!--                                            <img t-att-src="'/report/barcode/?type=%s&amp;width=%s&amp;height=%s&amp;value=No : %s;Date : %s; Patient : %s;Total Amount : %s' %('QR', 200, 200, doc.name, doc.date_order, doc.patient_name, doc.patient_paid_amount)"/>-->
+                                            <br/>
+                                            <strong>Patient ID
+                                                <t t-esc="doc.partner_id.id"/>
+                                            </strong>
+                                        </center>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5">
+                                        <center>
+                                            <br/>Powered with InPharma
+                                            <br/>by www.synergiasoft.com
+                                            <br/>Thank You
+                                        </center>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+<!--                    <div width="100%" style="margin-right:-5px;margin-left:-5px">-->
+<!--                        <table width="100%">-->
+<!--                            <tr>-->
+<!--                                <td>-->
+<!--                                    <b>Sale Voucher Earning amount :</b>-->
+<!--                                </td>-->
+<!--                                <t t-if="not doc.is_insurance_order and not doc.reedeem_voucher_ids">-->
+<!--                                    <td>-->
+<!--                                        <t t-esc="'%.2f'%doc.voucher_amount"/>-->
+<!--                                    </td>-->
+<!--                                </t>-->
+<!--                            </tr>-->
+<!--                        </table>-->
+<!--                    </div>-->
+                    <div class="oe_structure"/>
+
+                </t>
+            </div>
+        </t>
+</template>
+
+
+
+
+
+
+
+</odoo>

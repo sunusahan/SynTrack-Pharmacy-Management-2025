@@ -1,0 +1,13 @@
+<templates xml:space="preserve">
+    <t t-name="synergia_pharmacy.PatientEid" owl="1">
+        <span t-if="props.readonly" t-esc="props.value"/>
+        <input t-else=""
+            t-att-value="props.value"
+            t-att-placeholder="props.placeholder"
+            t-on-input="onInput"
+            t-on-blur="onBlur"
+            class="o_input"
+            t-ref="input"
+        />
+    </t>
+</templates>
