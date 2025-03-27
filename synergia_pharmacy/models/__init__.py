@@ -8,3 +8,4 @@ from . import pos_order_line
 from . import insurance_lines
 from . import pos_make_payment
 from . import account_move
+from . import account_move_line
